@@ -6,7 +6,7 @@
 
 int main()
 {
-    std::cout << L"hi 😅";
+	
 
     return 0;
 }
