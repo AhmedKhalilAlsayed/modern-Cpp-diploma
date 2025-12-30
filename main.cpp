@@ -6,7 +6,6 @@
 
 int main()
 {
-	
-
-    return 0;
+	std::cout << "Hello my friend" << std::endl;
+	return 0;
 }
