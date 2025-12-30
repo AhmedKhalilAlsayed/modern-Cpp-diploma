@@ -6,6 +6,6 @@
 
 int main()
 {
-	std::cout << "Hello my friend" << std::endl;
+	std::cout << "Remote edit" << std::endl;
 	return 0;
 }
