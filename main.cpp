@@ -10,5 +10,8 @@ int main()
 	//
 	//
 	std::cout << "Feature is done" << std::endl;
+	//
+	//
+	std::cout << "New Feature" << std::endl;
 	return 0;
 }
