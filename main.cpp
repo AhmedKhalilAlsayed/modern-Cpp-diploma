@@ -1,17 +1,1 @@
-#include <iostream>
-#include <csignal>
-#include <unistd.h>
-#include "Sales_item.h"
-#include <limits>
-
-int main()
-{
-	std::cout << "Remote edit" << std::endl;
-	//
-	//
-	std::cout << "Feature is done" << std::endl;
-	//
-	//
-	std::cout << "New Feature" << std::endl;
-	return 0;
-}
+// every branch is a session/tasks
