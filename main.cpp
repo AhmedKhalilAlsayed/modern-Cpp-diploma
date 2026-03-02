@@ -126,6 +126,8 @@ Integer get(bool bb)
 
 int main()
 {
-	Integer a = 5;
+	Integer a(10);
+	Integer b = std::move(a);
+
 	return 0;
 }
