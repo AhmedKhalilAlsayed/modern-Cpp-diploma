@@ -1,13 +1,11 @@
 #include <iostream>
 #include <string.h>
 #include <utility>
-#include "wrapper.cpp"
+#include "smart_ptr.cpp"
 
 int main()
 {
-	Wrapper p(new int);
-
-	std::cout << sizeof(p) << std::endl;
-
+	
+	
 	return 0;
 }
