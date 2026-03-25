@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string.h>
+#include <utility>
 
 using namespace std;
 
@@ -32,19 +33,6 @@ public:
 		{
 			cerr << "Failed to create the array!" << endl;
 			exit(1);
-		}
-	}
-
-	int operator[](size_t index) const
-	{
-		if (index >= arrLen)
-		{
-			cerr << "index " << index << ": Out of scope!" << endl;
-			return 0;
-		}
-		else
-		{
-			return arr[index];
 		}
 	}
 
@@ -104,13 +92,17 @@ public:
 	}
 
 	DynamicArray(DynamicArray &&mv)
+		: arr(std::exchange(mv.arr, nullptr)),
+		  arrLen(std::exchange(mv.arrLen, 0)),
+		  arrSize(std::exchange(mv.arrSize, 0)),
+		  resizingRatio(std::exchange(mv.resizingRatio, 0))
 	{
-		this->arrLen = mv.getArrLen();
-		this->arrSize = mv.getArrSize();
-		this->resizingRatio = mv.getResizeRatio();
+		// this->arrLen = mv.getArrLen();
+		// this->arrSize = mv.getArrSize();
+		// this->resizingRatio = mv.getResizeRatio();
 
-		this->arr = mv.arr;
-		mv.arr = nullptr;
+		// this->arr = mv.arr;
+		// mv.arr = nullptr;
 	}
 
 	DynamicArray &operator=(DynamicArray &&mv)
@@ -206,6 +198,16 @@ public:
 		delete[] arr;
 		arr = nullptr;
 	};
+	int &operator[](size_t index) const
+	{
+		if (index >= arrLen)
+		{
+			cerr << "index " << index << ": Out of scope!" << endl;
+			exit(1);
+		}
+
+		return arr[index];
+	}
 };
 
 int main()
@@ -213,15 +215,12 @@ int main()
 	DynamicArray arr(1);
 	arr.pushBack(15);
 	arr.pushBack(10);
+	arr.pushBack(60);
 
-	DynamicArray arrc(1);
-	arrc = arr;
-	//
-	// arr.printArr();
-	cout << arrc[0] << endl;
-	cout << arrc[1] << endl;
-	cout << arr.getArrLen() << endl;
-	cout << arr.getArrSize() << endl;
+	// int x = arr[0];
+	arr[0] = -1;
+
+	arr.printArr();
 
 	return 0;
 }
