@@ -5,8 +5,8 @@ class SharedPtr
 {
 public:
 	SharedPtr(int *ptr)
-		: ptr(ptr),
-		  counter(new int{1}) {}
+		: ptr_(ptr),
+		  counter_(new int{1}) {}
 
 	SharedPtr(const SharedPtr &copy)
 	{
@@ -28,8 +28,8 @@ public:
 	}
 
 	SharedPtr(SharedPtr &&mv)
-		: ptr(std::exchange(mv.ptr, nullptr)),
-		  counter(std::exchange(mv.counter, nullptr))
+		: ptr_(std::exchange(mv.ptr_, nullptr)),
+		  counter_(std::exchange(mv.counter_, nullptr))
 	{
 	}
 
@@ -41,8 +41,8 @@ public:
 			giveResource();
 
 			// take
-			ptr = std::exchange(mv.ptr, nullptr);
-			counter = std::exchange(mv.counter, nullptr);
+			ptr_ = std::exchange(mv.ptr_, nullptr);
+			counter_ = std::exchange(mv.counter_, nullptr);
 		}
 		return *this;
 	}
@@ -54,33 +54,33 @@ public:
 
 	int &operator*()
 	{
-		return *ptr;
+		return *ptr_;
 	}
 
 	int *operator->()
 	{
-		return ptr;
+		return ptr_;
 	}
 
 	int *get()
 	{
-		return ptr;
+		return ptr_;
 	}
 
 	void reset(int *ptr)
 	{
 		giveResource();
 
-		this->ptr = ptr;
+		this->ptr_ = ptr;
 		if (ptr != nullptr)
 		{
-			this->counter = new int{1};
+			this->counter_ = new int{1};
 		}
 	}
 
 	int getCount()
 	{
-		return *counter;
+		return *counter_;
 	}
 
 	// we can't turn it to a raw ptr, but can make it nullptr
@@ -90,41 +90,41 @@ public:
 	}
 
 private:
-	int *ptr = nullptr;
-	int *counter = nullptr;
+	int *ptr_ = nullptr;
+	int *counter_ = nullptr;
 
 	void takeResource(const SharedPtr &res)
 	{
 
-		ptr = res.ptr;
-		counter = res.counter;
+		ptr_ = res.ptr_;
+		counter_ = res.counter_;
 
-		if (counter == nullptr)
+		if (counter_ == nullptr || ptr_ == nullptr)
 		{
 			std::cerr << "counter/ptr is null" << std::endl;
 			return;
 		}
 
-		(*counter)++;
+		(*counter_)++;
 	}
 
 	void giveResource()
 	{
-		if (counter == nullptr)
+		if (counter_ == nullptr || ptr_ == nullptr)
 		{
 			std::cerr << "counter/ptr is null" << std::endl;
 			return;
 		}
 
-		(*counter)--;
+		(*counter_)--;
 
 		// no one has it
-		if (!*counter)
+		if (!*counter_)
 		{
-			delete ptr;
-			delete counter;
+			delete ptr_;
+			delete counter_;
 
-			ptr = counter = nullptr;
+			ptr_ = counter_ = nullptr;
 		}
 	}
 };

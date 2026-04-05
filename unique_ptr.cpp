@@ -4,7 +4,7 @@ class UniquePtr
 {
 public:
 	UniquePtr(int *ptr = nullptr)
-		: ptr(ptr)
+		: ptr_(ptr)
 	{
 	}
 
@@ -14,7 +14,7 @@ public:
 
 	// it is a ctor, no self assig! check
 	UniquePtr(UniquePtr &&mv)
-		: ptr(std::exchange(mv.ptr, nullptr))
+		: ptr_(std::exchange(mv.ptr_, nullptr))
 	{
 	}
 
@@ -23,56 +23,57 @@ public:
 		if (this != &mv)
 		{
 			// clean myself
-			delete ptr;
+			delete ptr_;
+			
 			// ptr = nullptr;
 
 			// then steal
-			ptr = std::exchange(mv.ptr, nullptr);
+			ptr_ = std::exchange(mv.ptr_, nullptr);
 		}
 		return *this;
 	}
 
 	~UniquePtr()
 	{
-		delete ptr;
-		ptr = nullptr;
+		delete ptr_;
+		ptr_ = nullptr;
 	}
 
 	int &operator*()
 	{
-		return *ptr;
+		return *ptr_;
 	}
 
 	int *operator->()
 	{
-		return ptr;
+		return ptr_;
 	}
 
 	explicit operator bool() const
 	{
-		return ptr != nullptr;
+		return ptr_ != nullptr;
 	}
 
 	// to get the ptr
 	int *get()
 	{
-		return ptr;
+		return ptr_;
 	}
 
 	// release the resource to be as a raw ptr
 	int *release()
 	{
-		return std::exchange(ptr, nullptr);
+		return std::exchange(ptr_, nullptr);
 	}
 
 	// take another resource
 	void reset(int *p)
 	{
-		delete ptr;
-		ptr = p;
+		delete ptr_;
+		ptr_ = p;
 	}
 
 private:
-	int *ptr = nullptr;
+	int *ptr_ = nullptr;
 
 };
