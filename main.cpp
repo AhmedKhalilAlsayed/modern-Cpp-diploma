@@ -5,24 +5,45 @@
 
 class UDT
 {
-public:
-	UDT(int data) : data(data) {}
+private:
 	int data = 0;
+
+public:
+	UDT(/* args */);
+	~UDT();
+	static void print(std::weak_ptr<int> wptr)
+	{
+		// std::cout << wptr.use_count() << std::endl;
+		std::cout << wptr.expired() << std::endl;
+
+		auto sptr = wptr.lock();
+		std::cout << sptr.get() << std::endl;
+	}
+};
+
+UDT::UDT(/* args */)
+{
+	std::cout << "ctor" << std::endl;
+}
+
+UDT::~UDT()
+{
+	std::cout << "dtor" << std::endl;
+}
+
+class Free
+{
+public:
+	void operator()(int *ptr)
+	{
+		free(ptr);
+	}
 };
 
 int main()
 {
+	int *ptr = (int *)malloc(sizeof(int));
+	auto uptr = std::unique_ptr<int, Free>(ptr, Free{});
 
-	// std::unique_ptr<UDT> ptr(new UDT);
-
-	auto ptr = std::make_unique<int>(101);
-
-	auto sptr = std::make_shared<int>(111);
-
-	std::shared_ptr<int> p = std::shared_ptr<int>(new int);
-	auto pp = std::make_unique<int>();
-	std::unique_ptr<int> ppp = std::make_unique<int>();
-
-	std::cout << sptr.get() << std::endl;
 	return 0;
 }
