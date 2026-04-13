@@ -10,7 +10,7 @@ void main()
 	// auto press = SensorFactory::createPressSensor();
 	// press.get()->calibrate();
 
-	auto temp = SensorFactory::createPressSensor();
+	auto temp = SensorFactory::createTempSensor();
 	
 	temp.get()->readvalue();
 
