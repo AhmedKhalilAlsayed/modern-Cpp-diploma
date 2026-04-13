@@ -5,17 +5,17 @@
 // so, will make an interface/abstract for the common functions
 
 // 1. interface
-class Sensor
+class ISensor
 {
 public:
-	virtual ~Sensor() = default;
+	virtual ~ISensor() = default;
 
 	virtual float readvalue() = 0;
 	virtual void calibrate() = 0;
 };
 
 // 2. concrete class (sensors)
-class TempSensor : public Sensor
+class TempSensor : public ISensor
 {
 public:
 	TempSensor() {}
@@ -31,7 +31,7 @@ public:
 	}
 };
 
-class PressSensor : public Sensor
+class PressSensor : public ISensor
 {
 public:
 	~PressSensor() override = default;
@@ -50,14 +50,14 @@ public:
 class SensorFactory
 {
 public:
-	static std::unique_ptr<Sensor> createTempSensor()
+	static std::unique_ptr<ISensor> createTempSensor()
 	{
 
 		// return new TempSensor();
 		return std::make_unique<TempSensor>();
 	}
 
-	static std::unique_ptr<Sensor>
+	static std::unique_ptr<ISensor>
 	createPressSensor()
 	{
 		return std::make_unique<PressSensor>();
