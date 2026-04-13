@@ -1,24 +1,18 @@
 #include <stdint.h>
-#include "led.hpp"
-#include "button.hpp"
-#include "parking.hpp"
-
-// dummy code for
-// AVR atmega32, 8-bit MCU
+#include "singleton_parking.cpp"
+#include "factory.cpp"
 
 void main()
 {
-	// LED red{0, 0, 0};
-	// LED blue{1, 0, 0};
-	// LED green{2, 0, 0};
-	// LED yellow{3, 0, 0};
+	// client
 
-	// PushButton btn{4, 0, 0};
+	// auto press = SensorFactory().createPressSensor();
+	// auto press = SensorFactory::createPressSensor();
+	// press.get()->calibrate();
 
-	auto ptr = ParkingPointerSinglton::getInstance();
-	auto obj = ParkingObjectSingleton::getInstance();
-	auto meyer = ParkingMeyerSingleton::getInstance();
-	// ptr->getCounter();
+	auto temp = SensorFactory::createPressSensor();
+	
+	temp.get()->readvalue();
 
 	while (true)
 	{
