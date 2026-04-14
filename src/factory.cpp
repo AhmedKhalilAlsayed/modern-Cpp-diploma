@@ -47,7 +47,7 @@ public:
 };
 
 // 3. Factory pattern
-class SensorFactory
+class ISensorFactory
 {
 public:
 	static std::unique_ptr<ISensor> createTempSensor()
