@@ -8,9 +8,18 @@
 
 int main()
 {
-	auto computerBuilder = std::make_unique<GeneralComputerBuilder>();
 
-	Computer c = computerBuilder->addCPU().addRAM().build();
+	auto pizzaBuilder = PizzaBuilder();
+	auto director = PizzaDirector();
 
+	Pizza pizza1 = director.make(pizzaBuilder, PizzaDirector::Pepperoni);
+	Pizza pizza2 = director.make(pizzaBuilder, PizzaDirector::Margherita);
+	Pizza pizza3 = director.make(pizzaBuilder, PizzaDirector::Pepperoni);
+
+	pizza1.getPizza();
+	std::cout << "\n";
+	pizza2.getPizza();
+	std::cout << "\n";
+	pizza3.getPizza();
 	return 0;
 }

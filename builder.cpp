@@ -2,125 +2,110 @@
 #include <memory>
 
 // product
-class Computer
-{
-private:
-	Computer()
-	{
-	}
-	void setCPU(const std::string &cpu)
-	{
-		cpu_ = cpu;
-	}
-	void setStorage(const std::string &storage)
-	{
-		storage_ = storage;
-	}
-	void setRAM(const uint32_t &ram)
-	{
-		ram_ = ram;
-	}
-	void setGPU(const bool &gpu)
-	{
-		hasGPU_ = gpu;
-	}
-	void show()
-	{
-		std::cout << "Computer: " << cpu_ << ", " << ram_ << "GB RAM, "
-				  << storage_ << ", GPU: " << (hasGPU_ ? "yes" : "no") << std::endl;
-	}
-
-	std::string cpu_ = "";
-	std::string storage_ = "";
-	int32_t ram_ = 0;
-	bool hasGPU_ = false;
-
-	// friend class IComputerBuilder; XXXXXXXXXXX
-	friend class GeneralComputerBuilder;
-	friend class GamingComputerBuilder;
-};
-
-class IComputerBuilder
+class Pizza
 {
 public:
-	virtual IComputerBuilder &addCPU() = 0;
-	virtual IComputerBuilder &addStorage() = 0;
-	virtual IComputerBuilder &addRAM() = 0;
-	virtual IComputerBuilder &addGPU() = 0;
-	virtual Computer build() = 0; // == getResult()
-	virtual ~IComputerBuilder() = default;
+	void getPizza()
+	{
+		std::cout << "dough_ " << dough_ << std::endl;
+		std::cout << "sauce_ " << sauce_ << std::endl;
+		std::cout << "topping_ " << topping_ << std::endl;
+		std::cout << "cheese_ " << cheese_ << std::endl;
+	}
+
+private:
+	Pizza() {}
+	std::string dough_, sauce_, topping_, cheese_;
+
+	void setDough(const std::string &d)
+	{
+		dough_ = d;
+	}
+	void setSauce(const std::string &s)
+	{
+		sauce_ = s;
+	}
+	void setTopping(const std::string &t)
+	{
+		topping_ = t;
+	}
+	void setChesse(const std::string &c)
+	{
+		cheese_ = c;
+	}
+
+	// friend builders
+	friend class PizzaBuilder;
 };
 
-class GeneralComputerBuilder final : public IComputerBuilder
+class IPizzaBuilder
+{
+public:
+	virtual IPizzaBuilder &addDough(const std::string &) = 0;
+	virtual IPizzaBuilder &addSauce(const std::string &) = 0;
+	virtual IPizzaBuilder &addTopping(const std::string &) = 0;
+	virtual IPizzaBuilder &addCheese(const std::string &) = 0;
+	virtual Pizza build() = 0;
+	virtual ~IPizzaBuilder() = default;
+};
+
+class PizzaBuilder final : public IPizzaBuilder
 {
 private:
-	Computer c;
+	Pizza pizza;
 
 public:
-	GeneralComputerBuilder &addCPU() override
+	IPizzaBuilder &addDough(const std::string &d) override
 	{
-		c.setCPU("Intel");
+		pizza.setDough(d);
 		return *this;
 	}
-	GeneralComputerBuilder &addStorage() override
+	IPizzaBuilder &addSauce(const std::string &s) override
 	{
-		c.setStorage("SSD");
+		pizza.setSauce(s);
 		return *this;
 	}
-	GeneralComputerBuilder &addRAM() override
+	IPizzaBuilder &addTopping(const std::string &t) override
 	{
-		c.setRAM(16);
+		pizza.setTopping(t);
 		return *this;
 	}
-	GeneralComputerBuilder &addGPU() override
+	IPizzaBuilder &addCheese(const std::string &c) override
 	{
-		std::cout << "AddGPU\n";
-		c.setGPU(true);
+		pizza.setChesse(c);
 		return *this;
 	}
-	// == getResult()
-	Computer build() override
+	Pizza build() override
 	{
-		std::cout << "GeneralComputerBuilder\n";
-		std::cout << "Validating ...\nDone...\n\n";
-		return c;
+		Pizza temp = std::move(pizza);
+		pizza = Pizza(); // rest, to be sure for next use for the same builder
+		return temp;
 	}
 };
 
-class GamingComputerBuilder final : public IComputerBuilder
+class PizzaDirector
 {
-private:
-	Computer c;
 
 public:
-	GamingComputerBuilder &addCPU() override
+	typedef enum
 	{
-		c.setCPU("Intel Gaming");
-		return *this;
-	}
-	GamingComputerBuilder &addStorage() override
+		Margherita,
+		Pepperoni
+	} PizzaType;
+
+	Pizza make(IPizzaBuilder &builder, PizzaType type)
 	{
-		c.setStorage("NMe");
-		return *this;
-	}
-	GamingComputerBuilder &addRAM() override
-	{
-		c.setRAM(64);
-		return *this;
-	}
-	GamingComputerBuilder &addGPU() override
-	{
-		std::cout << "AddGPU\n";
-		c.setGPU(true);
-		return *this;
-	}
-	// == getResult()
-	Computer build() override
-	{
-		std::cout << "GamingComputerBuilder\n";
-		std::cout << "Validating ...\nDone...\n\n";
-		return c;
+		switch (type)
+		{
+		case Margherita:
+			return builder.addTopping("Margherita").build();
+			break;
+		case Pepperoni:
+			return builder.addCheese("Pepperoni").addDough("Pepperoni").addSauce("Pepperoni").addTopping("Pepperoni").build();
+			break;
+		default:
+			return builder.addCheese("").addDough("").addSauce("").addTopping("").build();
+			break;
+		}
 	}
 };
-
-// can add many builder ...
