@@ -107,10 +107,10 @@ public:
 class RobotBuilder
 {
 private:
-	const std::unique_ptr<IRobotFactory> &factory_;
+	std::unique_ptr<IRobotFactory> &factory_;
 
 public:
-	RobotBuilder(const std::unique_ptr<IRobotFactory> &factory)
+	RobotBuilder(std::unique_ptr<IRobotFactory> &factory)
 		: factory_(factory)
 	{
 	}
@@ -120,6 +120,7 @@ public:
 		// build
 		auto motor = factory_.get()->createMotor();
 		auto sensor = factory_.get()->createSensor();
+
 		// test
 		motor.get()->move();
 		motor.get()->stop();

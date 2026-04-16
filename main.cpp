@@ -5,7 +5,7 @@
 
 int main()
 {
-	uint8_t type;
+	uint32_t type;
 	std::unique_ptr<RobotBuilder> robot;
 	std::unique_ptr<IRobotFactory> roboFactory;
 
@@ -24,10 +24,10 @@ int main()
 
 	switch (type)
 	{
-	case '1':
+	case 1:
 		roboFactory = std::make_unique<BasicRobotFactory>();
 		break;
-	case '2':
+	case 2:
 		roboFactory = std::make_unique<AdvancedRobotFactory>();
 		break;
 	default:
@@ -38,6 +38,7 @@ int main()
 
 	robot.get()->buildAndTest();
 	
+
 
 	return 0;
 }
