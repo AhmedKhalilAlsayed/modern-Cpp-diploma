@@ -107,25 +107,25 @@ public:
 class RobotBuilder
 {
 private:
-	std::unique_ptr<IRobotFactory> &factory_;
+	std::unique_ptr<IRobotFactory> factory_;
 
 public:
-	RobotBuilder(std::unique_ptr<IRobotFactory> &factory)
-		: factory_(factory)
+	RobotBuilder(std::unique_ptr<IRobotFactory> factory)
+		: factory_(std::move(factory))
 	{
 	}
 
 	void buildAndTest()
 	{
 		// build
-		auto motor = factory_.get()->createMotor();
-		auto sensor = factory_.get()->createSensor();
+		auto motor = factory_->createMotor();
+		auto sensor = factory_->createSensor();
 
 		// test
-		motor.get()->move();
-		motor.get()->stop();
+		motor->move();
+		motor->stop();
 
-		std::cout << "sensor.get()->read(): " << sensor.get()->read() << std::endl
+		std::cout << "sensor ->read(): " << sensor->read() << std::endl
 				  << std::endl;
 	}
 };
