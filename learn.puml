@@ -1,0 +1,25 @@
+@startuml Hi
+
+class Person{
+	-name: std::string
+
+	+getName(): std::string
+}
+
+' class School
+class Student
+class Teacher
+class Elearn
+
+' package
+namespace myNamespace{
+	class School
+}
+
+Student --|> Person
+Teacher --|> Person
+
+School "1" *-- "1..*" Student
+School "1" *-- "1..*" Teacher
+
+@enduml
