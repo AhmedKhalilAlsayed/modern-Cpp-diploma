@@ -2,74 +2,60 @@
 #include <memory>
 #include <unistd.h>
 
-// Factory
-
-// product interface
-class ITransport
+class INotifier
 {
 public:
-	virtual void deliver()
-	{
-		sleep(1); // init
-	}
-	virtual ~ITransport() = default;
+	virtual void send(std::string &&msg) = 0;
+	virtual ~INotifier() = default;
 };
 
-// products
-class Truck : public ITransport
+class EmailNotifier : public INotifier
 {
 public:
-	void deliver() override
+	void send(std::string &&msg) override
 	{
-		ITransport::deliver();
-
-		std::cout << "Truck" << std::endl;
+		std::cout << "Email: " << msg << "\n";
 	}
 };
 
-class Ship : public ITransport
+class SMSNotifier : public INotifier
 {
 public:
-	void deliver() override
+	void send(std::string &&msg) override
 	{
-		ITransport::deliver();
-
-		std::cout << "Ship" << std::endl;
+		std::cout << "SMS: " << msg << "\n";
 	}
 };
 
-/////////////////
-
-class TransportFactory
+class NotifierFactory
 {
 public:
-	static std::unique_ptr<ITransport> create(std::string type)
+	static std::unique_ptr<INotifier> create(std::string &type)
 	{
-		if (type == "truck")
-			return std::make_unique<Truck>();
-		if (type == "ship")
-			return std::make_unique<Ship>();
+		if (type == "email")
+			return std::make_unique<EmailNotifier>();
+		if (type == "sms")
+			return std::make_unique<SMSNotifier>();
+
 		return nullptr;
 	}
 };
 
-/////////////////////////
-
 int main()
 {
-	auto transport = TransportFactory::create("ship");
+	std::string type = "sms";
+	auto n = NotifierFactory::create(type);
 
-	if (transport)
+	if (n)
 	{
-		std::cout << "Loading ... \n";
-		transport->deliver();
+		std::cout << "Formatting...\n";
 
-		std::cout << "Done \n";
+		n->send("Hello World!");
+		
+		std::cout << "Logging...\n";
 	}
 	else
 	{
-		std::cerr << "Transport not supported!\n";
+		std::cerr << "Not Supported! \n";
 	}
-
-	return 0;
 }
