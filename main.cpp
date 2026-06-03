@@ -1,34 +1,30 @@
 #include <iostream>
 #include <memory>
 
-class Sensor
+class Base
 {
 public:
-	void hi()
+	virtual void show()
 	{
-		std::cout << "Hi... \n";
-	}
-
-	~Sensor()
-	{
-		std::cout << "Sensor dtor\n";
+		std::cout << "Hello Base" << std::endl;
 	}
 };
 
-std::unique_ptr<Sensor> get()
+class Derived : public Base
 {
-	// return std::unique_ptr<Sensor>();
-	// return std::unique_ptr<Sensor>(new Sensor);
-	return std::make_unique<Sensor>();
-}
+public:
+	void show() override
+	{
+		Base::show();
+
+		// std::cout << "Hello Derived" << std::endl;
+	}
+};
 
 int main()
 {
-	// Sensor s = get();
-	// s.hi();
-
-	auto ptr = get();
-	ptr->hi();
+	Derived b{};
+	b.show();
 
 	return 0;
 }
