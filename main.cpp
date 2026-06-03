@@ -1,66 +1,75 @@
 #include <iostream>
 #include <memory>
+#include <unistd.h>
 
-class IShape
+// Factory
+
+// product interface
+class ITransport
 {
 public:
-	virtual float getArea() const = 0;
-
-	virtual ~IShape() = default;
+	virtual void deliver()
+	{
+		sleep(1); // init
+	}
+	virtual ~ITransport() = default;
 };
 
-class Rectangle : public IShape
+// products
+class Truck : public ITransport
 {
-	float width_ = 0;
-	float height_ = 0;
-
 public:
-	Rectangle(float w, float h) : width_(w), height_(h) {}
-	float getArea() const override
+	void deliver() override
 	{
-		return width_ * height_;
+		ITransport::deliver();
+
+		std::cout << "Truck" << std::endl;
 	}
 };
 
-class Square : public IShape
+class Ship : public ITransport
 {
-	float side_ = 0;
-
 public:
-	Square(float s) : side_(s) {}
-
-	float getArea() const override
+	void deliver() override
 	{
-		return side_ * side_;
+		ITransport::deliver();
+
+		std::cout << "Ship" << std::endl;
 	}
 };
 
-class Circle : public IShape
-{
-	float rad_ = 0;
+/////////////////
 
+class TransportFactory
+{
 public:
-	Circle(float r) : rad_(r) {}
-	float getArea() const override
+	static std::unique_ptr<ITransport> create(std::string type)
 	{
-		return 3.14 * rad_ * rad_;
+		if (type == "truck")
+			return std::make_unique<Truck>();
+		if (type == "ship")
+			return std::make_unique<Ship>();
+		return nullptr;
 	}
 };
 
-/// @brief ////////////////////////
-void printArea(const IShape &shape)
-{
-	std::cout << "Area = " << shape.getArea() << std::endl;
-}
-////////////////////////////////////
+/////////////////////////
 
 int main()
 {
+	auto transport = TransportFactory::create("ship");
 
-	Rectangle rect{123, 2};
-	Square sq{3};
+	if (transport)
+	{
+		std::cout << "Loading ... \n";
+		transport->deliver();
 
-	printArea(sq);
+		std::cout << "Done \n";
+	}
+	else
+	{
+		std::cerr << "Transport not supported!\n";
+	}
 
 	return 0;
 }
