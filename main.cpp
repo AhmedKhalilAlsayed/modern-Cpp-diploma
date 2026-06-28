@@ -2,111 +2,80 @@
 #include <memory>
 #include <unistd.h>
 
-// render styles
-class IRenderStyle
+// LED drivers
+class ILEDDriver
 {
 public:
-	virtual void drawCircle(float x, float y, float redius) = 0;
-	virtual void drawRect(float x, float y, float width, float height) = 0;
-	virtual void drawTri(float x, float y, float width, float height) = 0;
+	virtual void on() = 0;
+	virtual void off() = 0;
 
-	virtual ~IRenderStyle() = default;
+	~ILEDDriver() = default;
 };
 
-class RasterRenderStyle : public IRenderStyle
+class GPIOLEDDriver : public ILEDDriver
 {
-
 public:
-	void drawCircle(float x, float y, float redius) override
+	void on() override
 	{
-		std::cout << "Raster style: Circle" << std::endl;
+		std::cout << "set pin HIGH" << std::endl;
 	}
-	void drawRect(float x, float y, float width, float height) override
+	void off() override
 	{
-		std::cout << "Raster style: Rect" << std::endl;
+		std::cout << "set pin LOW" << std::endl;
 	}
-	void drawTri(float x, float y, float width, float height) override
-	{
-		std::cout << "Raster style: Tri" << std::endl;
-	}
-	~RasterRenderStyle() = default;
 };
 
-class VectorRenderStyle : public IRenderStyle
+class I2CLEDDriver : public ILEDDriver
 {
-
 public:
-	void drawCircle(float x, float y, float redius) override
+	void on() override
 	{
-		std::cout << "Vector style: Circle" << std::endl;
+		std::cout << "send to led addr HIGH" << std::endl;
 	}
-	void drawRect(float x, float y, float width, float height) override
+	void off() override
 	{
-		std::cout << "Vector style: Rect" << std::endl;
+		std::cout << "send to led addr LOW" << std::endl;
 	}
-	void drawTri(float x, float y, float width, float height) override
-	{
-		std::cout << "Vector style: Tri" << std::endl;
-	}
-	~VectorRenderStyle() = default;
 };
 
-class IShape
+// LED interface
+class ILED
 {
 protected:
-	IRenderStyle &render;
+	ILEDDriver &driver_;
 
 public:
-	IShape(IRenderStyle &r) : render(r) {}
+	ILED(ILEDDriver &d) : driver_(d) {}
 
-	virtual void draw() = 0;
+	virtual void on() = 0;
+	virtual void off() = 0;
 
-	~IShape() = default;
+	virtual ~ILED() = default;
 };
 
-// shapes
-class Circle : public IShape
+class LED : public ILED
 {
 public:
-	Circle(IRenderStyle &r) : IShape(r) {}
+	LED(ILEDDriver &d) : ILED(d) {}
 
-	void draw() override
+	void on() override
 	{
-		render.drawCircle(1, 1, 1);
+		driver_.on();
 	}
-};
-class Rectangle : public IShape
-{
-
-public:
-	Rectangle(IRenderStyle &r) : IShape(r) {}
-
-	void draw() override
+	void off() override
 	{
-		render.drawRect(1, 1, 1, 1);
-	}
-};
-
-class Triangle : public IShape
-{
-public:
-	Triangle(IRenderStyle &r) : IShape(r) {}
-	void draw() override
-	{
-		render.drawTri(1, 1, 1, 1);
+		driver_.off();
 	}
 };
 
 int main()
 {
-	VectorRenderStyle vector;
-	RasterRenderStyle raster;
+	GPIOLEDDriver gpioDriver;
+	I2CLEDDriver i2cDriver;
 
-	Circle circle{raster};
-	circle.draw();
+	LED led{i2cDriver};
 
-	Triangle t{vector};
-	t.draw();
+	led.on();
 
 	return 0;
 }
