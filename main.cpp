@@ -8,6 +8,8 @@ class IRenderStyle
 public:
 	virtual void drawCircle(float x, float y, float redius) = 0;
 	virtual void drawRect(float x, float y, float width, float height) = 0;
+	virtual void drawTri(float x, float y, float width, float height) = 0;
+
 	virtual ~IRenderStyle() = default;
 };
 
@@ -22,6 +24,10 @@ public:
 	void drawRect(float x, float y, float width, float height) override
 	{
 		std::cout << "Raster style: Rect" << std::endl;
+	}
+	void drawTri(float x, float y, float width, float height) override
+	{
+		std::cout << "Raster style: Tri" << std::endl;
 	}
 	~RasterRenderStyle() = default;
 };
@@ -38,6 +44,10 @@ public:
 	{
 		std::cout << "Vector style: Rect" << std::endl;
 	}
+	void drawTri(float x, float y, float width, float height) override
+	{
+		std::cout << "Vector style: Tri" << std::endl;
+	}
 	~VectorRenderStyle() = default;
 };
 
@@ -48,7 +58,10 @@ protected:
 
 public:
 	IShape(IRenderStyle &r) : render(r) {}
+
 	virtual void draw() = 0;
+
+	~IShape() = default;
 };
 
 // shapes
@@ -74,6 +87,16 @@ public:
 	}
 };
 
+class Triangle : public IShape
+{
+public:
+	Triangle(IRenderStyle &r) : IShape(r) {}
+	void draw() override
+	{
+		render.drawTri(1, 1, 1, 1);
+	}
+};
+
 int main()
 {
 	VectorRenderStyle vector;
@@ -81,6 +104,9 @@ int main()
 
 	Circle circle{raster};
 	circle.draw();
+
+	Triangle t{vector};
+	t.draw();
 
 	return 0;
 }
