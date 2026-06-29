@@ -1,84 +1,93 @@
-#include <iostream>
+#include <algorithm>
+#include <cstddef>
+#include <iostream> // This header is typically found. If not, check your compiler setup.
 #include <memory>
+#include <ostream>
+#include <string>
 #include <unistd.h>
 #include <vector>
-#include <string>
 
-// without composite
+// composite
 
-class File
-{
+// component interface
+
+class IFileSystemNode {
 public:
-	std::string name;
-	File(std::string name) : name(name) {}
+  virtual void display(int indent = 0) = 0;
+  virtual size_t getSize() = 0;
 
-	void display()
-	{
-		std::cout << "File: " << this->name << std::endl;
-	}
+  virtual ~IFileSystemNode() = default;
 };
 
-class Folder
-{
-	std::vector<std::unique_ptr<Folder>> folders;
-	std::vector<std::unique_ptr<File>> files;
-	std::string name;
+// leaf
+class File : public IFileSystemNode {
+
+  std::string name_;
+  size_t size_;
 
 public:
-	Folder(std::string name)
-		: name(name) {}
+  File(const std::string &name, const size_t &size)
+      : name_(name), size_(size) {}
 
-	Folder &addFolder(std::unique_ptr<Folder> folder)
-	{
-		folders.push_back(std::move(folder));
+  void display(int indent = 0) override {
+    std::cout << std::string(indent, ' ');
+    std::cout << name_ << " " << size_ << "KB" << std::endl;
+  }
 
-		return *this;
-	}
-	
-
-	Folder &addFile(std::unique_ptr<File> file)
-	{
-		files.push_back(std::move(file));
-
-		return *this;
-	}
-
-	void display(size_t indent = 0)
-	{
-		// std::cout << ">" << std::endl;
-
-		std::cout << std::string(indent, '.');
-
-		std::cout << "Folder: " << name << std::endl;
-
-		for (const auto &folder : folders)
-		{
-			// std::cout << "Folder: " << folder.name << std::endl;
-			folder->display(indent + 2);
-		}
-
-		for (const auto &file : files)
-		{
-			std::cout << std::string(indent + 2, '.');
-			file->display();
-		}
-
-		// std::cout << std::string(0, '.');
-		// std::cout << "<" << std::endl;
-	}
+  size_t getSize() override { return size_; }
 };
 
-int main()
-{
-	auto root = std::make_unique<Folder>("/");
+// composite, group of objects
+class Folder : public IFileSystemNode {
+  std::string name_;
+  std::vector<std::unique_ptr<IFileSystemNode>> childern_;
 
-	auto bin = std::make_unique<Folder>("bin/");
-	bin->addFile(std::make_unique<File>("ls"));
+public:
+  Folder(const std::string &name) : name_(name) {}
 
-	root->addFolder(std::move(bin))
-		.addFolder(std::make_unique<Folder>("usr/"));
+  // add node, file folder ... any type
+  IFileSystemNode &add(std::unique_ptr<IFileSystemNode> child) {
+    childern_.push_back(std::move(child));
+    return *this;
+  }
 
-	root->display();
+  void display(int indent = 0) override {
 
-	return 0;
+    std::cout << std::string(indent, ' ');
+    std::cout << name_ << std::endl;
+
+    for (auto &c : childern_) {
+      c->display(indent + 2);
+    }
+  }
+
+  size_t getSize() override {
+    size_t size = 0;
+    for (auto &c : childern_) {
+      size += c->getSize();
+    }
+    return size;
+  }
+};
+
+int main() {
+
+  // composites
+  auto root = std::make_unique<Folder>("/");
+  auto docs = std::make_unique<Folder>("docs/");
+  auto img = std::make_unique<Folder>("img/");
+  auto usr = std::make_unique<Folder>("usr/");
+  auto ahmedkhalil = std::make_unique<Folder>("ahmedkhalil/");
+
+  // build
+  root->add(std::move(usr));
+  // usr now is nullptr! you can't use it
+  usr->add(std::move(ahmedkhalil));
+  ahmedkhalil->add(std::move(docs));
+  ahmedkhalil->add(std::move(img));
+
+  root->display();
+  //   std::cout << root.getSize() << std::endl;
+
+  return 0;
 }
