@@ -1,81 +1,84 @@
 #include <iostream>
 #include <memory>
 #include <unistd.h>
+#include <vector>
+#include <string>
 
-// LED drivers
-class ILEDDriver
+// without composite
+
+class File
 {
 public:
-	virtual void on() = 0;
-	virtual void off() = 0;
+	std::string name;
+	File(std::string name) : name(name) {}
 
-	~ILEDDriver() = default;
-};
-
-class GPIOLEDDriver : public ILEDDriver
-{
-public:
-	void on() override
+	void display()
 	{
-		std::cout << "set pin HIGH" << std::endl;
-	}
-	void off() override
-	{
-		std::cout << "set pin LOW" << std::endl;
+		std::cout << "File: " << this->name << std::endl;
 	}
 };
 
-class I2CLEDDriver : public ILEDDriver
+class Folder
 {
-public:
-	void on() override
-	{
-		std::cout << "send to led addr HIGH" << std::endl;
-	}
-	void off() override
-	{
-		std::cout << "send to led addr LOW" << std::endl;
-	}
-};
-
-// LED interface
-class ILED
-{
-protected:
-	ILEDDriver &driver_;
+	std::vector<std::unique_ptr<Folder>> folders;
+	std::vector<std::unique_ptr<File>> files;
+	std::string name;
 
 public:
-	ILED(ILEDDriver &d) : driver_(d) {}
+	Folder(std::string name)
+		: name(name) {}
 
-	virtual void on() = 0;
-	virtual void off() = 0;
-
-	virtual ~ILED() = default;
-};
-
-class LED : public ILED
-{
-public:
-	LED(ILEDDriver &d) : ILED(d) {}
-
-	void on() override
+	Folder &addFolder(std::unique_ptr<Folder> folder)
 	{
-		driver_.on();
+		folders.push_back(std::move(folder));
+
+		return *this;
 	}
-	void off() override
+	
+
+	Folder &addFile(std::unique_ptr<File> file)
 	{
-		driver_.off();
+		files.push_back(std::move(file));
+
+		return *this;
+	}
+
+	void display(size_t indent = 0)
+	{
+		// std::cout << ">" << std::endl;
+
+		std::cout << std::string(indent, '.');
+
+		std::cout << "Folder: " << name << std::endl;
+
+		for (const auto &folder : folders)
+		{
+			// std::cout << "Folder: " << folder.name << std::endl;
+			folder->display(indent + 2);
+		}
+
+		for (const auto &file : files)
+		{
+			std::cout << std::string(indent + 2, '.');
+			file->display();
+		}
+
+		// std::cout << std::string(0, '.');
+		// std::cout << "<" << std::endl;
 	}
 };
 
 int main()
 {
-	GPIOLEDDriver gpioDriver;
-	I2CLEDDriver i2cDriver;
+	auto root = std::make_unique<Folder>("/");
 
-	LED led{i2cDriver};
+	auto bin = std::make_unique<Folder>("bin/");
+	bin->addFile(std::make_unique<File>("ls"));
 
-	led.on();
+	root->addFolder(std::move(bin))
+		.addFolder(std::make_unique<Folder>("usr/"));
+
+	root->display();
 
 	return 0;
 }
