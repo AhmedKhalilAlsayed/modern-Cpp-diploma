@@ -1,93 +1,137 @@
 #include <algorithm>
 #include <cstddef>
-#include <iostream> // This header is typically found. If not, check your compiler setup.
+#include <iostream>
 #include <memory>
-#include <ostream>
+#include <stdexcept>
 #include <string>
 #include <unistd.h>
 #include <vector>
 
-// composite
+// menu system: items, and some of them is another internal menu
 
-// component interface
-
-class IFileSystemNode {
+// component
+class IMenuItem {
+  // actions
 public:
-  virtual void display(int indent = 0) = 0;
-  virtual size_t getSize() = 0;
+  std::string name_;
 
-  virtual ~IFileSystemNode() = default;
+  IMenuItem(const std::string &n) : name_(n) {}
+
+  virtual void execute() = 0;
+  virtual void show(int indent = 0) = 0;
+
+  virtual ~IMenuItem() = default;
 };
 
-// leaf
-class File : public IFileSystemNode {
-
-  std::string name_;
-  size_t size_;
+// leaf, item
+class Item : public IMenuItem {
 
 public:
-  File(const std::string &name, const size_t &size)
-      : name_(name), size_(size) {}
+  Item(std::string n) : IMenuItem(n) {}
 
-  void display(int indent = 0) override {
-    std::cout << std::string(indent, ' ');
-    std::cout << name_ << " " << size_ << "KB" << std::endl;
+  void show(int indent = 0) override {
+    std::cout << std::string(indent, ' ') << name_ << std::endl;
   }
 
-  size_t getSize() override { return size_; }
+  void execute() override {
+    std::cout << name_ << " option execute ..." << std::endl;
+  }
 };
 
-// composite, group of objects
-class Folder : public IFileSystemNode {
-  std::string name_;
-  std::vector<std::unique_ptr<IFileSystemNode>> childern_;
+// composite, menu
+class Menu : public IMenuItem {
+  std::vector<std::unique_ptr<IMenuItem>> items;
 
 public:
-  Folder(const std::string &name) : name_(name) {}
+  Menu(std::string n) : IMenuItem(n) {}
 
-  // add node, file folder ... any type
-  IFileSystemNode &add(std::unique_ptr<IFileSystemNode> child) {
-    childern_.push_back(std::move(child));
-    return *this;
+  void execute() override {
+
+    // Menu opens/show itself
+    std::cout << "Opening menu: " << name_ << std::endl;
+
+    show(2);
   }
 
-  void display(int indent = 0) override {
+  IMenuItem &getChild(size_t index) {
 
-    std::cout << std::string(indent, ' ');
-    std::cout << name_ << std::endl;
+    if (index >= items.size()) {
+      throw std::out_of_range("index out of range");
+    }
+    return *items[index];
+  }
 
-    for (auto &c : childern_) {
-      c->display(indent + 2);
+  bool executeChild(const std::string &name) {
+    for (auto &item : items) {
+      if (item->name_ == name) {
+        item->execute();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void show(int indent = 0) override {
+
+    std::cout << std::string(indent, ' ') << name_ << std::endl;
+
+    for (auto &i : items) {
+      i->show(indent + 2);
     }
   }
 
-  size_t getSize() override {
-    size_t size = 0;
-    for (auto &c : childern_) {
-      size += c->getSize();
-    }
-    return size;
+  void add(std::unique_ptr<IMenuItem> item) {
+    items.push_back(std::move(item));
   }
+
+  //   std::unique_ptr<IMenuItem> &click(size_t index) { return items.at(index);
+  //   }
 };
 
 int main() {
 
-  // composites
-  auto root = std::make_unique<Folder>("/");
-  auto docs = std::make_unique<Folder>("docs/");
-  auto img = std::make_unique<Folder>("img/");
-  auto usr = std::make_unique<Folder>("usr/");
-  auto ahmedkhalil = std::make_unique<Folder>("ahmedkhalil/");
+  // leavs
+  auto mainMenu = std::make_unique<Menu>("Main");
+  auto exit = std::make_unique<Item>("exit");
 
-  // build
-  root->add(std::move(usr));
-  // usr now is nullptr! you can't use it
-  usr->add(std::move(ahmedkhalil));
-  ahmedkhalil->add(std::move(docs));
-  ahmedkhalil->add(std::move(img));
+  auto soundMenu = std::make_unique<Menu>("Sound Menu");
+  auto soundLow = std::make_unique<Item>("Lower");
+  auto soundHigh = std::make_unique<Item>("Higher");
 
-  root->display();
-  //   std::cout << root.getSize() << std::endl;
+  auto mouseMenu = std::make_unique<Menu>("Mouse Menu");
+  auto mouseSlow = std::make_unique<Item>("Slower");
+  auto mouseFast = std::make_unique<Item>("Faster");
+
+  // composite
+  mouseMenu->add(std::move(mouseSlow));
+  mouseMenu->add(std::move(mouseFast));
+
+  soundMenu->add(std::move(soundLow));
+  soundMenu->add(std::move(soundHigh));
+
+  mainMenu->add(std::move(mouseMenu));
+  mainMenu->add(std::move(soundMenu));
+
+  mainMenu->add(std::move(exit));
+
+  // show the tree
+  mainMenu->show();
+  std::cout << std::endl;
+
+//   static_cast<Menu&>(mainMenu->getChild(0)).execute();
+  std::cout << std::endl;
+
+  //   mainMenu->getChild(0).execute();
+  //   std::cout << std::endl;
+
+  return 0;
+}
+
+int main_() {
+  std::cout << "Asdasd" << std::endl;
+  std::cout << std::string(1, ' ');
+  std::cout << "Asdasd" << std::endl;
+  std::cout << "Asdasd" << std::endl;
 
   return 0;
 }
