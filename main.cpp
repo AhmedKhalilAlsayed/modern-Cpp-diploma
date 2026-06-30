@@ -36,9 +36,9 @@ public:
 };
 
 // decorators
-class Milk : public IDecor {
+class WithMilk : public IDecor {
 public:
-  Milk(std::unique_ptr<ICoffe> c) : IDecor(std::move(c)) {}
+  WithMilk(std::unique_ptr<ICoffe> c) : IDecor(std::move(c)) {}
 
   std::string getDescription() override {
     return coffe_->getDescription() + " + Milk";
@@ -47,9 +47,9 @@ public:
   double getCost() override { return coffe_->getCost() + 10; }
 };
 
-class Caramel : public IDecor {
+class WithCaramel : public IDecor {
 public:
-  Caramel(std::unique_ptr<ICoffe> c) : IDecor(std::move(c)) {}
+  WithCaramel(std::unique_ptr<ICoffe> c) : IDecor(std::move(c)) {}
 
   std::string getDescription() override {
     return coffe_->getDescription() + " + Caramel";
@@ -62,7 +62,7 @@ int main() {
 
 //   auto coffe = std::make_unique<Coffe>();
 //   auto order = std::make_unique<Caramel>(std::move(coffe));
-  auto order0 = std::make_unique<Milk>(
+  auto order0 = std::make_unique<WithMilk>(
 	std::make_unique<Coffe>()
   );
 
