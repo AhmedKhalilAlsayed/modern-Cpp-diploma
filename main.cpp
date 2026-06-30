@@ -1,128 +1,71 @@
 #include <algorithm>
 #include <cstddef>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <unistd.h>
 #include <vector>
 
-// menu system: items, and some of them is another internal menu
-
-// component
-class IMenuItem {
-  // actions
+// base interface
+class ICoffe {
 public:
-  std::string name_;
+  virtual std::string getDescription() = 0;
+  virtual double getCost() = 0;
 
-  IMenuItem(const std::string &n) : name_(n) {}
-
-  virtual void execute() = 0;
-  virtual void show(int indent = 0) = 0;
-
-  virtual ~IMenuItem() = default;
+  virtual ~ICoffe() = default;
 };
 
-// leaf, item
-class Item : public IMenuItem {
+// base impl
+class Coffe : public ICoffe {
 
 public:
-  Item(std::string n) : IMenuItem(n) {}
+  std::string getDescription() override { return "Simple Coffe"; }
 
-  void show(int indent = 0) override {
-    std::cout << std::string(indent, ' ') << name_ << std::endl;
-  }
-
-  void execute() override {
-    std::cout << name_ << " option execute ..." << std::endl;
-  }
+  double getCost() override { return 20; }
 };
 
-// composite, menu
-class Menu : public IMenuItem {
-  std::vector<std::unique_ptr<IMenuItem>> items;
+// decor, decoration, interface
+class IDecor : public ICoffe {
+protected:
+  std::unique_ptr<ICoffe> coffe_; // base
 
 public:
-  Menu(std::string n) : IMenuItem(n) {}
+  IDecor(std::unique_ptr<ICoffe> c) : coffe_(std::move(c)) {}
+};
 
-  void execute() override {
+// decorators
+class Milk : public IDecor {
+public:
+  Milk(std::unique_ptr<ICoffe> c) : IDecor(std::move(c)) {}
 
-    // Menu opens/show itself
-    std::cout << "Opening menu: " << name_ << std::endl;
-
-    show(2);
+  std::string getDescription() override {
+    return coffe_->getDescription() + " + Milk";
   }
 
-  IMenuItem &getChild(size_t index) {
+  double getCost() override { return coffe_->getCost() + 10; }
+};
 
-    if (index >= items.size()) {
-      throw std::out_of_range("index out of range");
-    }
-    return *items[index];
+class Caramel : public IDecor {
+public:
+  Caramel(std::unique_ptr<ICoffe> c) : IDecor(std::move(c)) {}
+
+  std::string getDescription() override {
+    return coffe_->getDescription() + " + Caramel";
   }
 
-  bool executeChild(const std::string &name) {
-    for (auto &item : items) {
-      if (item->name_ == name) {
-        item->execute();
-        return true;
-      }
-    }
-    return false;
-  }
-
-  void show(int indent = 0) override {
-
-    std::cout << std::string(indent, ' ') << name_ << std::endl;
-
-    for (auto &i : items) {
-      i->show(indent + 2);
-    }
-  }
-
-  void add(std::unique_ptr<IMenuItem> item) {
-    items.push_back(std::move(item));
-  }
-
-  //   std::unique_ptr<IMenuItem> &click(size_t index) { return items.at(index);
-  //   }
+  double getCost() override { return coffe_->getCost() + 8; }
 };
 
 int main() {
 
-  // leavs
-  auto mainMenu = std::make_unique<Menu>("Main");
-  auto exit = std::make_unique<Item>("exit");
+  auto coffe = std::make_unique<Coffe>();
+  auto order = std::make_unique<Caramel>(std::move(coffe));
+  auto order0 = std::make_unique<Milk>(std::move(order));
 
-  auto soundMenu = std::make_unique<Menu>("Sound Menu");
-  auto soundLow = std::make_unique<Item>("Lower");
-  auto soundHigh = std::make_unique<Item>("Higher");
-
-  auto mouseMenu = std::make_unique<Menu>("Mouse Menu");
-  auto mouseSlow = std::make_unique<Item>("Slower");
-  auto mouseFast = std::make_unique<Item>("Faster");
-
-  // composite
-  mouseMenu->add(std::move(mouseSlow));
-  mouseMenu->add(std::move(mouseFast));
-
-  soundMenu->add(std::move(soundLow));
-  soundMenu->add(std::move(soundHigh));
-
-  mainMenu->add(std::move(mouseMenu));
-  mainMenu->add(std::move(soundMenu));
-
-  mainMenu->add(std::move(exit));
-
-  // show the tree
-  mainMenu->show();
-  std::cout << std::endl;
-
-//   static_cast<Menu&>(mainMenu->getChild(0)).execute();
-  std::cout << std::endl;
-
-  //   mainMenu->getChild(0).execute();
-  //   std::cout << std::endl;
+  std::cout << order0->getDescription() << std::endl;
+  std::cout << order0->getCost() << std::endl;
 
   return 0;
 }
