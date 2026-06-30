@@ -60,9 +60,11 @@ public:
 
 int main() {
 
-  auto coffe = std::make_unique<Coffe>();
-  auto order = std::make_unique<Caramel>(std::move(coffe));
-  auto order0 = std::make_unique<Milk>(std::move(order));
+//   auto coffe = std::make_unique<Coffe>();
+//   auto order = std::make_unique<Caramel>(std::move(coffe));
+  auto order0 = std::make_unique<Milk>(
+	std::make_unique<Coffe>()
+  );
 
   std::cout << order0->getDescription() << std::endl;
   std::cout << order0->getCost() << std::endl;
