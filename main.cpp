@@ -1,82 +1,108 @@
+
 #include <algorithm>
-#include <cstddef>
 #include <iostream>
-#include <iterator>
 #include <memory>
-#include <stdexcept>
+#include <ostream>
 #include <string>
-#include <unistd.h>
-#include <vector>
 
-// base interface
-class ICoffe {
-public:
-  virtual std::string getDescription() = 0;
-  virtual double getCost() = 0;
+// State Pattern
 
-  virtual ~ICoffe() = default;
-};
+// forward declaration
+class TrafficLight;
+class RedState;
+class GreenState;
+class YellowState;
 
-// base impl
-class Coffe : public ICoffe {
-
-public:
-  std::string getDescription() override { return "Simple Coffe"; }
-
-  double getCost() override { return 20; }
-};
-
-// decor, decoration, interface
-class IDecor : public ICoffe {
+//
+class IState {
 protected:
-  std::unique_ptr<ICoffe> coffe_; // base
+  TrafficLight &light_;
 
 public:
-  IDecor(std::unique_ptr<ICoffe> c) : coffe_(std::move(c)) {}
+  IState(TrafficLight &t) : light_(t) {}
+
+  virtual void next() = 0;
+  virtual std::string getState() = 0;
+
+  virtual ~IState() = default;
+};
+//
+class RedState : public IState {
+public:
+  RedState(TrafficLight &t) : IState(t) {}
+
+  void next() override;
+  std::string getState() override { return "RED"; }
 };
 
-// decorators
-class WithMilk : public IDecor {
+class GreenState : public IState {
 public:
-  WithMilk(std::unique_ptr<ICoffe> c) : IDecor(std::move(c)) {}
+  GreenState(TrafficLight &t) : IState(t) {}
+  void next() override;
+  std::string getState() override { return "GREEN"; }
+};
 
-  std::string getDescription() override {
-    return coffe_->getDescription() + " + Milk";
+class YellowState : public IState {
+public:
+  YellowState(TrafficLight &t) : IState(t) {}
+  void next() override;
+  std::string getState() override { return "YELLOW"; }
+};
+
+//
+class TrafficLight {
+
+  std::unique_ptr<IState> state_;
+
+public:
+  TrafficLight() { state_ = std::make_unique<RedState>(*this); }
+
+  void setState(std::unique_ptr<IState> newState) {
+    state_ = std::move(newState);
   }
 
-  double getCost() override { return coffe_->getCost() + 10; }
-};
-
-class WithCaramel : public IDecor {
-public:
-  WithCaramel(std::unique_ptr<ICoffe> c) : IDecor(std::move(c)) {}
-
-  std::string getDescription() override {
-    return coffe_->getDescription() + " + Caramel";
+  void next() {
+    // if red, make it yellow
+    // if yellow make it green
+    // and so on
+    state_->next();
   }
 
-  double getCost() override { return coffe_->getCost() + 8; }
+  // get the state name
+  void getState() {
+    std::cout << "Current State: " << state_->getState() << std::endl;
+  }
 };
 
-int main() {
-
-//   auto coffe = std::make_unique<Coffe>();
-//   auto order = std::make_unique<Caramel>(std::move(coffe));
-  auto order0 = std::make_unique<WithMilk>(
-	std::make_unique<Coffe>()
-  );
-
-  std::cout << order0->getDescription() << std::endl;
-  std::cout << order0->getCost() << std::endl;
-
-  return 0;
+// State method definitions
+void RedState::next() {
+  std::cout << "Transitioning from RED to GREEN..." << std::endl;
+  light_.setState(std::make_unique<GreenState>(light_));
 }
 
-int main_() {
-  std::cout << "Asdasd" << std::endl;
-  std::cout << std::string(1, ' ');
-  std::cout << "Asdasd" << std::endl;
-  std::cout << "Asdasd" << std::endl;
+void GreenState::next() {
+  std::cout << "Transitioning from GREEN to YELLOW..." << std::endl;
+  light_.setState(std::make_unique<YellowState>(light_));
+}
+
+void YellowState::next() {
+  std::cout << "Transitioning from YELLOW to RED..." << std::endl;
+  light_.setState(std::make_unique<RedState>(light_));
+}
+
+int main() {
+  TrafficLight light;
+
+  light.getState(); // Initial state
+
+  light.next();
+  light.getState();
+
+  light.next();
+  light.getState();
+
+  light.next();
+  light.getState();
 
   return 0;
 }
